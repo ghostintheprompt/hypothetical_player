@@ -1,0 +1,9 @@
+{
+  "name": "HYPO: Hypothetical Player",
+  "description": "A stealth-first, lightweight VLC/Handbrake hybrid branded as HYBO. Designed for untraceable casting and minimal footprint.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
