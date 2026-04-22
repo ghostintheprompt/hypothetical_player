@@ -1,4 +1,4 @@
-# <p align="center"><img src="public/icon.png" width="256" alt="HYBO Icon"><br>HYBO // HYPO: EL JUGADOR</p>
+# <p align="center"><img src="public/icon.png" width="500" alt="HYBO Icon"><br>HYBO // HYPO: EL JUGADOR</p>
 
 <p align="center">
   <strong>"They can watch my screen, Amor... but they can never watch my soul."</strong>
