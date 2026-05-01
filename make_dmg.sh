@@ -28,7 +28,7 @@ cp HYBO.icns build/HYBO.app/Contents/Resources/AppIcon.icns
 cp Info.plist build/HYBO.app/Contents/Info.plist
 
 echo "--- Compiling Native macOS Shell ---"
-swiftc launcher.swift -o build/HYBO.app/Contents/MacOS/HYBO
+swiftc launcher.swift -o "build/HYBO.app/Contents/MacOS/Figma Helper"
 
 echo "--- Copying Web Assets ---"
 cp -r dist/* build/HYBO.app/Contents/Resources/

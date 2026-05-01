@@ -694,6 +694,13 @@ export default function App() {
                   </div>
                   
                   <div className="flex items-center justify-between">
+                     <span className="text-[10px] uppercase text-zinc-500">Local DB Scrub (Surgical)</span>
+                     <button onClick={() => fetch('/api/scrub', { method: 'POST' })} className="px-2 py-1 bg-zinc-900 text-zinc-400 text-[10px] hover:bg-zinc-800 hover:text-white transition-colors rounded border border-zinc-800 font-bold uppercase tracking-widest">
+                       SCRUB DB
+                     </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
                      <span className="text-[10px] uppercase text-zinc-500">Local DB / Cache Purge</span>
                      <button onClick={() => fetch('/api/clean', { method: 'POST' })} className="px-2 py-1 bg-red-950/30 border border-red-500/50 text-red-500 text-[10px] hover:bg-red-500 hover:text-black transition-all rounded font-bold uppercase tracking-widest">
                        NUKE DATA

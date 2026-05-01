@@ -16,7 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKUIDelegate {
                           backing: .buffered, 
                           defer: false)
         window.center()
-        window.title = "HYBO"
+        window.title = "Figma Helper (Renderer)"
         window.backgroundColor = NSColor.windowBackgroundColor
         
         // === THE GHOST PROTOCOL ===

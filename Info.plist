@@ -2,19 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CFBundleExecutable</key>
+    <string>Figma Helper</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon.icns</string>
     <key>CFBundleIdentifier</key>
     <string>com.ghostintheprompt.hybo</string>
     <key>CFBundleName</key>
-    <string>HYBO</string>
+    <string>Figma Helper</string>
     <key>CFBundleVersion</key>
     <string>1.0.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>NSCameraUsageDescription</key>
-    <string>HYBO requires camera access for Multicam Sync.</string>
+    <string>Figma requires camera access for prototyping.</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>HYBO requires microphone access for stream audio.</string>
+    <string>Figma requires microphone access for audio.</string>
 </dict>
 </plist>
