@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # MDRN Corp Release Script - HYBO v1.0.0
-# Generates production build and macOS DMG with native icon support.
+# Generates production build and macOS DMG with native Ghost Protocol Shell.
 
-echo "--- Building HYBO ---"
+echo "--- Building HYBO Web App ---"
 npm run build
 
 echo "--- Creating macOS Iconset ---"
@@ -25,27 +25,12 @@ echo "--- Structuring HYBO.app ---"
 mkdir -p build/HYBO.app/Contents/MacOS
 mkdir -p build/HYBO.app/Contents/Resources
 cp HYBO.icns build/HYBO.app/Contents/Resources/AppIcon.icns
+cp Info.plist build/HYBO.app/Contents/Info.plist
 
-# Create a basic Info.plist for the icon
-cat <<EOF > build/HYBO.app/Contents/Info.plist
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleIconFile</key>
-    <string>AppIcon.icns</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.ghostintheprompt.hybo</string>
-    <key>CFBundleName</key>
-    <string>HYBO</string>
-    <key>CFBundleVersion</key>
-    <string>1.0.0</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-</dict>
-</plist>
-EOF
+echo "--- Compiling Native macOS Shell ---"
+swiftc launcher.swift -o build/HYBO.app/Contents/MacOS/HYBO
 
+echo "--- Copying Web Assets ---"
 cp -r dist/* build/HYBO.app/Contents/Resources/
 
 echo "--- Generating DMG ---"

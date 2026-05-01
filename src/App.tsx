@@ -47,6 +47,54 @@ interface MediaSource {
   stream?: MediaStream;
 }
 
+// --- Active Canvas Hardening ---
+const NoiseOverlay = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    let animationId: number;
+    const drawNoise = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      const idata = ctx.createImageData(w, h);
+      const buffer32 = new Uint32Array(idata.data.buffer);
+      const len = buffer32.length;
+      for (let i = 0; i < len; i++) {
+        // High frequency adversarial noise
+        if (Math.random() < 0.15) {
+          buffer32[i] = 0x25ffffff; // low opacity white noise
+        } else if (Math.random() < 0.05) {
+          buffer32[i] = 0x1500ff00; // low opacity green noise
+        }
+      }
+      ctx.putImageData(idata, 0, 0);
+      
+      // Draw scanlines
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      for (let y = 0; y < h; y += 4) {
+        ctx.fillRect(0, y, w, 1);
+      }
+      
+      animationId = requestAnimationFrame(drawNoise);
+    };
+    drawNoise();
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      width={320} 
+      height={240} 
+      className="absolute inset-0 w-full h-full pointer-events-none opacity-40 mix-blend-screen" 
+    />
+  );
+};
+
 export default function App() {
   const [sources, setSources] = useState<MediaSource[]>([]);
   const [liveSourceId, setLiveSourceId] = useState<string | null>(null);
@@ -59,6 +107,10 @@ export default function App() {
   const [camoType, setCamoType] = useState<CamoType>('EXCEL');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'latest'>('idle');
+
+  const liveVideoRef = useRef<HTMLVideoElement>(null);
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const checkUpdates = useCallback(async (isManual = false) => {
     setUpdateStatus('checking');
@@ -89,10 +141,6 @@ export default function App() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-  
-  const liveVideoRef = useRef<HTMLVideoElement>(null);
-  const previewVideoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // --- Handlers ---
   const addFileSource = (e: ChangeEvent<HTMLInputElement>) => {
@@ -146,8 +194,26 @@ export default function App() {
   };
 
   const togglePanic = useCallback(() => {
-    setIsGhostMode(prev => !prev);
-  }, []);
+    setIsGhostMode(prev => {
+      const next = !prev;
+      // Deep-Level Panic Mode: Mute streams and pause videos
+      sources.forEach(src => {
+        if (src.type === 'camera' && src.stream) {
+          src.stream.getTracks().forEach(track => {
+            track.enabled = !next; // disables camera light/mic without killing stream
+          });
+        }
+      });
+      if (next) {
+        if (liveVideoRef.current) liveVideoRef.current.pause();
+        if (previewVideoRef.current) previewVideoRef.current.pause();
+      } else {
+        if (liveVideoRef.current) liveVideoRef.current.play().catch(() => {});
+        if (previewVideoRef.current) previewVideoRef.current.play().catch(() => {});
+      }
+      return next;
+    });
+  }, [sources]);
 
   // Hotkeys
   useEffect(() => {
@@ -170,9 +236,9 @@ export default function App() {
         liveVideoRef.current.srcObject = null;
         liveVideoRef.current.src = liveSource.url;
       }
-      liveVideoRef.current.play().catch(() => {});
+      if (!isGhostMode) liveVideoRef.current.play().catch(() => {});
     }
-  }, [liveSourceId, sources]);
+  }, [liveSourceId, sources, isGhostMode]);
 
   useEffect(() => {
     const previewSource = sources.find(s => s.id === previewSourceId);
@@ -183,9 +249,9 @@ export default function App() {
         previewVideoRef.current.srcObject = null;
         previewVideoRef.current.src = previewSource.url;
       }
-      previewVideoRef.current.play().catch(() => {});
+      if (!isGhostMode) previewVideoRef.current.play().catch(() => {});
     }
-  }, [previewSourceId, sources]);
+  }, [previewSourceId, sources, isGhostMode]);
 
   // --- Render Helpers ---
   const DynamicCamoUI = () => {
@@ -373,9 +439,9 @@ export default function App() {
              
              {/* OBFS Overlay */}
              {isShieldActive && (
-               <div className="absolute inset-0 pointer-events-none opacity-[0.04] overflow-hidden">
-                  <div className="absolute inset-0 animate-pulse bg-gradient-to-tr from-ghost-green to-transparent" />
-                  <div className="w-full h-full" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
+               <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  <div className="absolute inset-0 animate-pulse bg-gradient-to-tr from-ghost-green/5 to-transparent mix-blend-overlay" />
+                  <NoiseOverlay />
                </div>
              )}
 
@@ -612,6 +678,25 @@ export default function App() {
                        {updateStatus === 'checking' ? 'CHECKING...' : 
                         updateStatus === 'available' ? 'UPDATE AVAILABLE' : 
                         updateStatus === 'latest' ? 'UP TO DATE' : 'CHECK FOR UPDATES...'}
+                     </button>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-zinc-900 space-y-4">
+                  <h3 className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Offensive Counter-Measures</h3>
+                  
+                  <div className="flex items-center justify-between">
+                     <span className="text-[10px] uppercase text-zinc-500">Tracker Freeze (SIGSTOP)</span>
+                     <div className="flex gap-2">
+                       <button onClick={() => fetch('/api/freeze', { method: 'POST' })} className="px-2 py-1 bg-red-900/50 text-red-500 text-[10px] hover:bg-red-800 transition-colors rounded border border-red-900">FREEZE</button>
+                       <button onClick={() => fetch('/api/unfreeze', { method: 'POST' })} className="px-2 py-1 bg-zinc-900 text-zinc-400 text-[10px] hover:bg-zinc-800 hover:text-white transition-colors rounded border border-zinc-800">THAW</button>
+                     </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                     <span className="text-[10px] uppercase text-zinc-500">Local DB / Cache Purge</span>
+                     <button onClick={() => fetch('/api/clean', { method: 'POST' })} className="px-2 py-1 bg-red-950/30 border border-red-500/50 text-red-500 text-[10px] hover:bg-red-500 hover:text-black transition-all rounded font-bold uppercase tracking-widest">
+                       NUKE DATA
                      </button>
                   </div>
                 </div>
