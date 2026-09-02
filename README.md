@@ -37,12 +37,12 @@ HYBO isn't just a web player. It is a compiled, native macOS application designe
 ### [ > INSTALLATION ]
 
 #### DMG Download
-Take the `HYBO_v1.0.0.dmg` from the [Releases](https://github.com/ghostintheprompt/hybo/releases). Install it like a secret.
+Take the `HYBO_v1.0.0.dmg` from the [Releases](https://github.com/ghostintheprompt/hypothetical_player/releases). Install it like a secret.
 
 #### Build from Source
 You must build this on macOS to compile the native Ghost Protocol Swift shell.
 ```bash
-git clone https://github.com/ghostintheprompt/hybo.git
+git clone https://github.com/ghostintheprompt/hypothetical_player.git
 npm install
 ./make_dmg.sh
 ```
